@@ -28,7 +28,7 @@ isGood(){
   local retval=1
   
   # Condition to return good status. Result would be status of ` command `
-  if [ `echo 'test' | grep 'te'` ]; then
+  if [ `curl -s -m 1 'http://localhost:8001/health/shallow' | awk 'match($0, /.*"status":"good".*/){ print 0;exit}{print 1}'` ]; then
   	retval=0
   fi
   
@@ -45,6 +45,7 @@ doRescue(){
     done
 
   # trigger the necessary services
+  cd $GOPATH/src/github.com/Comcast/rulio/ && nohup ./bin/startengine.sh > /dev/null 2>&1 &
   echo 'services restarted'
 }
 
