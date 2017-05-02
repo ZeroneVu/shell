@@ -27,13 +27,8 @@ isGood(){
   # bash shell condition will understand 0 as success/true/good/correct and 1 for oposite 
   local retval=1
   
-  # Condition to return good status.
-  # Make sure the command inside if (command) always return 0 or 1
-  # Example:
-  # if (return $(curl -s 'http://localhost:8001/health/shallow' | awk 'match($0, /.*"status":"good".*/){ print 0;exit}{print 1}')); then
-  #	retval=0
-  # fi	  
-  if (return 0); then
+  # Condition to return good status. Result would be status of ` command `
+  if [ `echo 'test' | grep 'te'` ]; then
   	retval=0
   fi
   
@@ -43,27 +38,26 @@ isGood(){
 doRescue(){
 
   # search and destroy. let's kill the old stuck up processes
-  ps aux | grep name_of_victim | grep -v grep | awk '{ print $1}' |
+  ps aux | grep name_of_victim | grep -v grep | awk '{print $2}' |
     while read PID; do
       # TODO better print out information of killed processes and store it to log   
       killtree $PID 9
     done
 
   # trigger the necessary services
-  # Example:
-  # cd $GOPATH/src/github.com/Comcast/rulio/ && nohup ./bin/startengine.sh > /dev/null 2>&1 &
   echo 'services restarted'
 }
 
 while true
 do 
   
-  # okei i'm not feeling alright
+  # okei i'm not feeling alright.  0|1 meant true|false in shell
   if ! isGood; then
+    echo "{\"status\":\"bad\",\"time\":\"$(date)\"}"
     doRescue
   else
     # TODO providing a better log logic
-    echo "{\"status\":\"good\",\"time\":\"`date "+%Y-%m-%d %H:%M:%S"`\"}"
+    echo "{\"status\":\"good\",\"time\":\"$(date)\"}"
   fi   
   
   # Sleepless nights. From here to eternity

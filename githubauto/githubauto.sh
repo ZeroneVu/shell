@@ -6,16 +6,23 @@ localPATH="/script"
 # remote repository of the script
 remoteRepo="https://github.com/ZeroneVu/shell.git"
 
+git -C $localPATH remote add upstream $remoteRepo
+git -C $localPATH fetch origin
+
 # determine hostname
 hostName=$(hostname)
 
-if [ ! `git -C $localPATH branch --list $hostName `]
-then
-   hostName="master"
+# if remote doesn't has branch same name with host name
+if [ ! `git -C $localPATH ls-remote --heads $remoteRepo $hostName|awk -v p="\/$hostName$" '{if(match($2,p)){print 0;}}'` ];then
+  hostName="master"
+else
+  # checking that local git branch has $hostName branch or not
+  if [ ! `git -C $localPATH branch --list $hostName|awk '{if ($0) print 0;}'` ];then
+    # if $hostName branch doesn't existed on local yet ... create it with -b 
+    git -C $localPATH checkout -b $hostName
+  fi
 fi
 
-git -C $localPATH remote add upstream $remoteRepo
-git -C $localPATH fetch origin
 git -C $localPATH checkout $hostName
 
 newCommitID=$(git -C $localPATH log $hostName..origin/$hostName --oneline | awk {'print $1'})
